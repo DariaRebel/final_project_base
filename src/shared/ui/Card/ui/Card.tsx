@@ -2,11 +2,12 @@ import classNames from 'classnames';
 import s from './Card.module.css';
 import { Price } from './Price/ui/Price';
 import { Link } from 'react-router-dom';
-import { LikeButton } from '../../LikeButton';
-import { useAppSelector } from '../../../store/utils';
-import { cartSelectors } from '../../../store/slices/cart';
-import { useAddToCart } from '../../../hooks/useAddToCart';
-import { CartCounter } from '../../CartCounter';
+import { LikeButton } from '@shared/ui/LikeButton';
+import { useAppSelector } from '@shared/store/utils';
+import { cartSelectors } from '@shared/store/slices/cart';
+import { useAddToCart } from '@shared/hooks/useAddToCart';
+import { CartCounter } from '@shared/ui/CartCounter';
+import { useCallback, useMemo } from 'react';
 
 type CardProps = {
 	product: Product;
@@ -16,6 +17,11 @@ export const Card = ({ product }: CardProps) => {
 	const cartProducts = useAppSelector(cartSelectors.getCartProducts);
 	const isProductInCart = cartProducts.some((p) => p.id === id);
 	const { addProductToCart } = useAddToCart();
+
+	const handleAdd = useCallback(() => {
+		addProductToCart({ ...product, count: 1 });
+	}, [addProductToCart, product]);
+
 
 	return (
 		<article className={s['card']}>
@@ -55,7 +61,7 @@ export const Card = ({ product }: CardProps) => {
 				<CartCounter productId={id} />
 			) : (
 				<button
-					onClick={() => addProductToCart({ ...product, count: 1 })}
+					onClick={() => handleAdd()}
 					disabled={isProductInCart}
 					className={classNames(
 						s['card__cart'],

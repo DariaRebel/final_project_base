@@ -1,5 +1,5 @@
 import { CartItem } from '../../CartItem';
-import s from '../../CartPage.module.css';
+import s from './CartList.module.css';
 import classNames from 'classnames';
 
 type CartListProps = {

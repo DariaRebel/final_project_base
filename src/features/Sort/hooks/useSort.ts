@@ -1,8 +1,8 @@
-import { useAppDispatch, useAppSelector } from '../../../store/utils';
+import { useAppDispatch, useAppSelector } from '@shared/store/utils';
 import {
 	productsActions,
 	productsSelectors,
-} from '../../../store/slices/products';
+} from '@shared/store/slices/products';
 
 interface SortParams {
 	title: string;
