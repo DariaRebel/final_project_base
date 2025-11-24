@@ -1,14 +1,16 @@
 import s from './LikeButton.module.css';
-import { ReactComponent as LikeSvg } from './../../../assets/icons/like.svg';
+//import { ReactComponent as LikeSvg } from './../../../assets/icons/like.svg';
+import LikeSvg from '@shared/assets/icons/like.svg?react';
 import classNames from 'classnames';
-import { useAppSelector } from '../../../store/utils';
-import { userSelectors } from '../../../store/slices/user';
+import { useAppSelector } from '@shared/store/utils';
+import { userSelectors } from '@shared/store/slices/user';
 import {
 	useSetLikeProductMutation,
 	useDeleteLikeProductMutation,
 	IErrorResponse,
-} from '../../../store/api/productsApi';
+} from '@shared/store/api/productsApi';
 import { toast } from 'react-toastify';
+import { useOptimistic } from 'react';
 
 type TLikeButtonProps = {
 	product: Product;
@@ -21,29 +23,33 @@ export const LikeButton = ({ product }: TLikeButtonProps) => {
 	const [deleteLike] = useDeleteLikeProductMutation();
 
 	const isLike = product?.likes.some((l) => l.userId === user?.id);
-
+	const [optimisticLike, setOptimisticLike] = useOptimistic(isLike, (prevValue) => !prevValue);
 	const toggleLike = async () => {
 		if (!accessToken) {
 			toast.warning('Вы не авторизованы');
 			return;
 		}
-		let response;
-		if (isLike) {
-			response = await deleteLike({ id: `${product.id}` });
-		} else {
-			response = await setLike({ id: `${product.id}` });
-		}
 
-		if (response.error) {
-			const error = response.error as IErrorResponse;
-			toast.error(error.data.message);
+		setOptimisticLike(!optimisticLike);
+	
+		try {
+		  let response;
+		  if (isLike) {
+			response = await deleteLike({ id: `${product.id}` });
+		  } else {
+			response = await setLike({ id: `${product.id}` });
+		  }
+		} catch (error) {
+			const err = error as IErrorResponse;
+			toast.error(err.data.message || "Someting wrong")
+		  	console.error('Failed:', error);
 		}
 	};
 
 	return (
 		<button
 			className={classNames(s['card__favorite'], {
-				[s['card__favorite_is-active']]: isLike,
+				[s['card__favorite_is-active']]: optimisticLike,
 			})}
 			onClick={toggleLike}>
 			<LikeSvg />

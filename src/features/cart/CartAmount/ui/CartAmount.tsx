@@ -1,20 +1,41 @@
-import s from '../../CartPage.module.css';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import s from './CartAmount.module.css';
 import classNames from 'classnames';
+import { Modal } from '@shared/ui/Modal';
+import { toast } from 'react-toastify';
+import { Button } from '@mui/material';
 
 type CartAmountProps = {
 	products: CartProduct[];
 };
 export const CartAmount = ({ products }: CartAmountProps) => {
-	const allPrice = products.reduce((acc, p) => p.price * p.count + acc, 0);
-	const allDiscount = products.reduce(
-		(acc, p) => p.discount * p.count + acc,
-		0
+	const [isModalOpen, setIsModalOpen] = useState(false);
+	const confirmRef = useRef<HTMLButtonElement>(null);
+	const allPrice = useMemo(
+		() => products.reduce((acc, p) => p.price * p.count + acc, 0),
+		[products]
+	);
+	const allDiscount = useMemo(
+		() => products.reduce((acc, p) => p.discount * p.count + acc, 0),
+		[products]
 	);
 
-	const handleSubmitCart = () => {
+	const handleConfirm = () => {
+		console.log('Заказ подтвержден:', products);
+		setIsModalOpen(false);
+		toast.success('Вы оформили заказ!');
 		const order = products.map((p) => ({ id: p.id, count: p.count }));
 		console.log('Отправка заказа на сервер: ', JSON.stringify(order, null, 2));
 	};
+	const handleSubmitCart = () => {
+		setIsModalOpen(true);
+	};
+
+	useEffect(() => {
+		if (isModalOpen && confirmRef.current) {
+			confirmRef.current.focus();
+		}
+	}, [isModalOpen]);
 
 	return (
 		<div className={classNames(s['cart-amount'])}>
@@ -58,6 +79,25 @@ export const CartAmount = ({ products }: CartAmountProps) => {
 				)}>
 				Оформить заказ
 			</button>
+			<Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+				<h2>Для продолжения оформления</h2>
+				<p>
+					Подтвердите ваш заказ на {products.length} товара
+				</p>
+				<div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+					<Button
+						onClick={handleConfirm}
+						className={s.modalConfirmButton}>
+						Ок
+					</Button>
+					<Button
+						ref={confirmRef}
+						onClick={() => setIsModalOpen(false)}
+					>
+						Отмена
+					</Button>
+				</div>
+			</Modal>
 		</div>
 	);
 };

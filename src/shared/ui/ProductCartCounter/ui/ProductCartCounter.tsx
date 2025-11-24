@@ -2,6 +2,7 @@ import s from './ProductCartCounter.module.css';
 import classNames from 'classnames';
 import { useCount } from '../hooks/useCount';
 import { useAddToCart } from '../../../hooks/useAddToCart';
+import { useCallback } from 'react';
 
 type ProductCartCounterProps = {
 	product: Product;
@@ -9,6 +10,10 @@ type ProductCartCounterProps = {
 export const ProductCartCounter = ({ product }: ProductCartCounterProps) => {
 	const { count, handleCount, handleCountMinus, handleCountPlus } = useCount();
 	const { addProductToCart } = useAddToCart();
+
+	const handleAdd = useCallback(() => {
+		addProductToCart({ ...product, count });
+	}, [addProductToCart, product, count]);
 
 	return (
 		<div className={classNames('product__btn-wrap')}>
@@ -27,7 +32,7 @@ export const ProductCartCounter = ({ product }: ProductCartCounterProps) => {
 				</button>
 			</div>
 			<button
-				onClick={() => addProductToCart({ ...product, count })}
+				onClick={() => handleAdd()}
 				className={classNames(s['button'], s['button_type_primary'])}>
 				В корзину
 			</button>
